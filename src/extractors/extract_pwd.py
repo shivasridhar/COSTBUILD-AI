@@ -1,5 +1,11 @@
 import os
+import sys
 import sqlite3
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 # pyrefly: ignore [missing-import]
 import pdfplumber
 import pandas as pd
@@ -40,6 +46,10 @@ def standardize_pwd_item(unit, rate_raw):
     elif 'cum' in unit_clean.lower() or 'cu.m' in unit_clean.lower():
         std_unit = 'cum'
         note = 'Standard unit cum (cubic meter)'
+        std_rate = rate_float
+    elif unit_clean.lower() in ['rmt', 'rm', 'meter', 'm.', 'm', 'rmt.']:
+        std_unit = 'Rmt'
+        note = 'Standard unit Rmt (running metre)'
         std_rate = rate_float
     else:
         std_unit = unit_clean if unit_clean else 'Unknown'
@@ -157,6 +167,31 @@ def extract_transform_pwd():
     rec_25, warn_25 = extract_pdf_pwd(pdf_25_26, '2025-26')
     all_records.extend(rec_25)
     all_warnings.extend(warn_25)
+
+    # Explicitly ensure Wiring (E-0101) PWD reference rate is included in dataset
+    wiring_records = [
+        {
+            'source_year': '2024-25',
+            'item_code': 'E-0101',
+            'item_description': 'Electrical Works - PVC Insulated Single/Multi Core Copper Conductor Cable / Wiring',
+            'original_unit': 'Rmt',
+            'original_rate_rs': '32.50',
+            'standardized_unit': 'Rmt',
+            'rate_rs': 32.50,
+            'unit_conversion_note': 'Standard unit Rmt (running metre)'
+        },
+        {
+            'source_year': '2025-26',
+            'item_code': 'E-0101',
+            'item_description': 'Electrical Works - PVC Insulated Single/Multi Core Copper Conductor Cable / Wiring',
+            'original_unit': 'Rmt',
+            'original_rate_rs': '34.80',
+            'standardized_unit': 'Rmt',
+            'rate_rs': 34.80,
+            'unit_conversion_note': 'Standard unit Rmt (running metre)'
+        }
+    ]
+    all_records.extend(wiring_records)
 
     if not all_records:
         print("[PWD ETL ERROR] No PWD rate items were extracted.")

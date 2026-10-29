@@ -41,6 +41,14 @@ venv.bak/
 *.db
 *.sqlite3
 
+# Node / Frontend
+node_modules/
+dist/
+dist-ssr/
+
+# Generated test output artifacts
+scratch/*.pdf
+
 # IDE / Editor files
 .vscode/
 .idea/

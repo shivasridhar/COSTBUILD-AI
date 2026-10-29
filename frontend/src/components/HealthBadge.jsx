@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { getHealth } from '../api/client';
-import { Activity, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
+import { CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 
 export default function HealthBadge() {
   const [health, setHealth] = useState(null);
@@ -31,22 +31,22 @@ export default function HealthBadge() {
       <div className={`health-badge ${isHealthy ? 'healthy' : 'unhealthy'}`}>
         <div className="status-indicator">
           {loading ? (
-            <RefreshCw className="spin-icon" size={14} />
+            <RefreshCw className="spinner" size={13} />
           ) : isHealthy ? (
-            <CheckCircle size={14} className="icon-success" />
+            <CheckCircle size={13} className="icon-success" />
           ) : (
-            <AlertTriangle size={14} className="icon-error" />
+            <AlertTriangle size={13} className="icon-error" />
           )}
           <span className="status-text">
             {loading
-              ? 'Checking System Status...'
+              ? 'CHECKING STATUS...'
               : isHealthy
-              ? 'API Online • Database Connected'
-              : `API Error: ${health?.message || 'Disconnected'}`}
+              ? 'SYSTEM ONLINE • DB CONNECTED'
+              : `SYS WARNING: ${health?.message || 'DISCONNECTED'}`}
           </span>
         </div>
         <button className="btn-refresh-status" onClick={checkStatus} title="Refresh System Health">
-          <RefreshCw size={12} />
+          <RefreshCw size={11} />
         </button>
       </div>
     </div>

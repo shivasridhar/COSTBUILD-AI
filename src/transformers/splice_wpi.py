@@ -25,7 +25,7 @@ def splice_wpi():
     df_old = extract_wpi_old()
     df_new = extract_wpi_new()
 
-    value_cols = ['wpi_all_commodities', 'wpi_cement', 'wpi_cement_subgroup', 'wpi_steel', 'wpi_steel_subgroup']
+    value_cols = ['wpi_all_commodities', 'wpi_cement', 'wpi_cement_subgroup', 'wpi_steel', 'wpi_steel_subgroup', 'wpi_wiring', 'wpi_wiring_subgroup']
 
     # 2. Identify overlap period
     overlap_months = sorted(list(set(df_old['year_month']).intersection(set(df_new['year_month']))))
@@ -46,17 +46,19 @@ def splice_wpi():
     print(f"  • Overlapping Months Count: {num_overlap}")
 
     for col in value_cols:
-        ratio = df_overlap_new[col] / df_overlap_old[col]
-        lf = ratio.mean()
-        linking_factors[col] = lf
-        print(f"  • Linking Factor for {col:20s}: {lf:.8f}")
+        if col in df_overlap_old.columns and col in df_overlap_new.columns:
+            ratio = df_overlap_new[col] / df_overlap_old[col]
+            lf = ratio.mean()
+            linking_factors[col] = lf
+            print(f"  • Linking Factor for {col:20s}: {lf:.8f}")
 
     # 4. Rescale OLD series for months BEFORE new series start date
     new_start_date = df_new['year_month'].min()
     df_old_before = df_old[df_old['year_month'] < new_start_date].copy()
 
     for col in value_cols:
-        df_old_before[col] = df_old_before[col] * linking_factors[col]
+        if col in df_old_before.columns and col in linking_factors:
+            df_old_before[col] = df_old_before[col] * linking_factors[col]
 
     df_old_before['source_series'] = "2011-12 base (linked)"
 
@@ -66,8 +68,12 @@ def splice_wpi():
 
     # 6. Concatenate & sort chronologically
     db_cols = ['year_month'] + value_cols + ['source_series']
-    df_spliced = pd.concat([df_old_before[db_cols], df_new_series[db_cols]], ignore_index=True)
-    df_spliced = df_spliced.sort_values('year_month').reset_index(drop=True)
+    df_spliced = pd.concat([df_old_before, df_new_series], ignore_index=True)
+    # Ensure all required db_cols exist
+    for col in db_cols:
+        if col not in df_spliced.columns:
+            df_spliced[col] = None
+    df_spliced = df_spliced[db_cols].sort_values('year_month').reset_index(drop=True)
 
     missing_count = df_spliced[value_cols].isna().sum().to_dict()
     print(f"\n[WPI SPLICE SUCCESS] Created continuous series: {df_spliced['year_month'].min()} to {df_spliced['year_month'].max()} ({len(df_spliced)} months)")

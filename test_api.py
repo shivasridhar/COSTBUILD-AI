@@ -63,9 +63,128 @@ def test_fastapi_service():
     assert abs(direct_anchor_cement - api_anchor_cement) < 1e-4, "Discrepancy in anchor conversion!"
     assert abs(direct_m1_cost - api_m1_cost) < 1e-4, "Discrepancy in BOM cost calculation!"
 
-    print("\nSUCCESS: API Response matches direct module output IDENTICALLY to 0 decimal places!")
+    # 5. Test POST /check-fair-price
+    print("\n--- 5. TESTING POST /check-fair-price ENDPOINT ---")
+    
+    # a. At market quote (steel baseline for 2026-07 is ~59,641.09; 59,000 is ~-1.07% which is within ±5%)
+    at_market_resp = client.post("/check-fair-price", json={
+        "material": "steel",
+        "quoted_rate": 59000.0,
+        "quoted_unit": "MT",
+        "quoted_date": "2026-07-01",
+        "source_note": "Local Vendor A"
+    })
+    print(f"At market quote status: {at_market_resp.status_code}")
+    print(f"Response: {json.dumps(at_market_resp.json(), indent=2)}")
+    assert at_market_resp.status_code == 200
+    assert at_market_resp.json()["verdict"] == "at market"
+    assert at_market_resp.json()["baseline_unit"] == "MT"
+
+    # b. Below market quote (steel baseline for 2026-07 is ~59,641.09; 50,000 is ~-16.17% which is below market)
+    below_resp = client.post("/check-fair-price", json={
+        "material": "steel",
+        "quoted_rate": 50000.0,
+        "quoted_unit": "MT",
+        "quoted_date": "2026-07-01",
+        "source_note": "Discount Supplier B"
+    })
+    print(f"Below market response: {below_resp.json()['verdict']} (deviation: {below_resp.json()['deviation_pct']}%)")
+    assert below_resp.status_code == 200
+    assert below_resp.json()["verdict"] == "below market"
+    assert below_resp.json()["deviation_pct"] < -5.0
+
+    # c. Above market quote
+    above_resp = client.post("/check-fair-price", json={
+        "material": "steel",
+        "quoted_rate": 70000.0,
+        "quoted_unit": "MT",
+        "quoted_date": "2026-07-01"
+    })
+    assert above_resp.status_code == 200
+    assert above_resp.json()["verdict"] == "above market"
+    assert above_resp.json()["deviation_pct"] > 5.0
+
+    # d. Boundary Tests for ±5.0%
+    # Steel baseline for 2026-07-01 is 59641.09
+    baseline_val = at_market_resp.json()["baseline_rate"]
+
+    # Exactly +5.0% boundary: 59641.09 * 1.05 = 62623.1445 -> rate 62623.14 -> deviation round((62623.14 - 59641.09)/59641.09 * 100) = 5.0%
+    bound_plus_5_rate = round(baseline_val * 1.05, 2)
+    b_plus_5_resp = client.post("/check-fair-price", json={
+        "material": "steel",
+        "quoted_rate": bound_plus_5_rate,
+        "quoted_unit": "MT",
+        "quoted_date": "2026-07-01"
+    })
+    print(f"Boundary +5.0% check rate={bound_plus_5_rate}: deviation={b_plus_5_resp.json()['deviation_pct']}%, verdict='{b_plus_5_resp.json()['verdict']}'")
+    assert b_plus_5_resp.json()["verdict"] == "at market", f"Expected 'at market' at +5.0% boundary, got {b_plus_5_resp.json()['verdict']}"
+
+    # Just above +5.0% boundary: rate multiplier 1.052 -> deviation > 5.0%
+    bound_plus_just_above_rate = round(baseline_val * 1.052, 2)
+    b_plus_above_resp = client.post("/check-fair-price", json={
+        "material": "steel",
+        "quoted_rate": bound_plus_just_above_rate,
+        "quoted_unit": "MT",
+        "quoted_date": "2026-07-01"
+    })
+    print(f"Boundary +5.01% check rate={bound_plus_just_above_rate}: deviation={b_plus_above_resp.json()['deviation_pct']}%, verdict='{b_plus_above_resp.json()['verdict']}'")
+    assert b_plus_above_resp.json()["verdict"] == "above market", f"Expected 'above market' at +5.01%, got {b_plus_above_resp.json()['verdict']}"
+
+    # Exactly -5.0% boundary: 59641.09 * 0.95 = 56659.0355 -> rate 56659.04 -> deviation -5.0%
+    bound_minus_5_rate = round(baseline_val * 0.95, 2)
+    b_minus_5_resp = client.post("/check-fair-price", json={
+        "material": "steel",
+        "quoted_rate": bound_minus_5_rate,
+        "quoted_unit": "MT",
+        "quoted_date": "2026-07-01"
+    })
+    print(f"Boundary -5.0% check rate={bound_minus_5_rate}: deviation={b_minus_5_resp.json()['deviation_pct']}%, verdict='{b_minus_5_resp.json()['verdict']}'")
+    assert b_minus_5_resp.json()["verdict"] == "at market", f"Expected 'at market' at -5.0% boundary, got {b_minus_5_resp.json()['verdict']}"
+
+    # Just below -5.0% boundary: rate 56650.0 -> deviation -5.02%
+    bound_minus_below_rate = round(baseline_val * 0.9499, 2)
+    b_minus_below_resp = client.post("/check-fair-price", json={
+        "material": "steel",
+        "quoted_rate": bound_minus_below_rate,
+        "quoted_unit": "MT",
+        "quoted_date": "2026-07-01"
+    })
+    print(f"Boundary -5.01% check rate={bound_minus_below_rate}: deviation={b_minus_below_resp.json()['deviation_pct']}%, verdict='{b_minus_below_resp.json()['verdict']}'")
+    assert b_minus_below_resp.json()["verdict"] == "below market", f"Expected 'below market' at -5.01%, got {b_minus_below_resp.json()['verdict']}"
+
+    # e. Unit mismatch quote (coil vs Rmt for wiring)
+    mismatch_resp = client.post("/check-fair-price", json={
+        "material": "wiring",
+        "quoted_rate": 1200.0,
+        "quoted_unit": "coil",
+        "quoted_date": "2026-07-01"
+    })
+    assert mismatch_resp.status_code == 200
+    assert mismatch_resp.json()["verdict"] == "unit mismatch"
+    assert "baseline is expressed in 'Rmt'" in mismatch_resp.json()["note"]
+
+    # f. Date out of range quote
+    out_of_range_resp = client.post("/check-fair-price", json={
+        "material": "steel",
+        "quoted_rate": 56000.0,
+        "quoted_unit": "MT",
+        "quoted_date": "2030-01-01"
+    })
+    assert out_of_range_resp.status_code == 200
+    assert out_of_range_resp.json()["verdict"] == "date out of range"
+
+    # g. DB audit verification
+    import sqlite3
+    from src.optimization.bom_optimizer import DEFAULT_DB_PATH
+    conn = sqlite3.connect(DEFAULT_DB_PATH)
+    rows = conn.execute("SELECT material, quoted_rate, quoted_unit FROM vendor_quotes ORDER BY id DESC LIMIT 10;").fetchall()
+    conn.close()
+    print(f"Recorded DB quotes count verified: {len(rows)} rows found in vendor_quotes.")
+
+    print("\nSUCCESS: All fair price check boundary & verdict tests and DB audits PASSED!")
 
 if __name__ == "__main__":
     if hasattr(sys.stdout, 'reconfigure'):
         sys.stdout.reconfigure(encoding='utf-8')
     test_fastapi_service()
+

@@ -1,17 +1,18 @@
 import React, { useState } from 'react';
-import { Calculator, AlertCircle, Loader2, CheckSquare, Square } from 'lucide-react';
+import { Calculator, AlertCircle, Loader2, CheckSquare, Square, ArrowRight } from 'lucide-react';
 
 const AVAILABLE_MATERIALS = [
-  { id: 'steel', label: 'Steel (MT)', color: '#6366f1' },
-  { id: 'cement', label: 'Cement (Bags/MT)', color: '#0ea5e9' },
-  { id: 'sand', label: 'Sand (Cu.M)', color: '#f59e0b' },
-  { id: 'brick', label: 'Bricks (Nos)', color: '#ef4444' },
-  { id: 'gravel', label: 'Gravel (Cu.M)', color: '#10b981' },
+  { id: 'steel', label: 'Steel (MT)' },
+  { id: 'cement', label: 'Cement (Bags/MT)' },
+  { id: 'wiring', label: 'Wiring (Electrical)' },
+  { id: 'sand', label: 'Sand (Cu.M)' },
+  { id: 'brick', label: 'Bricks (Nos)' },
+  { id: 'gravel', label: 'Gravel (Cu.M)' },
 ];
 
 export default function InputForm({ onSubmit, loading, apiError }) {
   const [sqft, setSqft] = useState(1000);
-  const [targetMaterials, setTargetMaterials] = useState(['steel', 'cement', 'sand', 'brick', 'gravel']);
+  const [targetMaterials, setTargetMaterials] = useState(['steel', 'cement', 'wiring', 'sand', 'brick', 'gravel']);
   const [clientError, setClientError] = useState(null);
 
   const toggleMaterial = (matId) => {
@@ -38,7 +39,6 @@ export default function InputForm({ onSubmit, loading, apiError }) {
     setClientError(null);
 
     const parsedSqft = Number(sqft);
-    // Client-side validation matching API's gt=0 validation
     if (isNaN(parsedSqft) || parsedSqft <= 0) {
       setClientError('Square footage must be a positive integer greater than 0.');
       return;
@@ -53,7 +53,12 @@ export default function InputForm({ onSubmit, loading, apiError }) {
   };
 
   return (
-    <div className="card input-card">
+    <div className="card input-card blueprint-panel">
+      <span className="corner-mark top-left">+</span>
+      <span className="corner-mark top-right">+</span>
+      <span className="corner-mark bottom-left">+</span>
+      <span className="corner-mark bottom-right">+</span>
+
       <div className="card-header">
         <Calculator className="header-icon" size={22} />
         <div>
@@ -71,7 +76,7 @@ export default function InputForm({ onSubmit, loading, apiError }) {
             <input
               id="sqft-input"
               type="number"
-              min="-10000"
+              min="1"
               step="1"
               value={sqft}
               onChange={(e) => setSqft(e.target.value)}
@@ -79,7 +84,7 @@ export default function InputForm({ onSubmit, loading, apiError }) {
               className={`text-input ${clientError ? 'input-invalid' : ''}`}
               disabled={loading}
             />
-            <span className="input-unit">sq. ft.</span>
+            <span className="input-unit">SQ. FT.</span>
           </div>
           <small className="help-text">Must be a positive integer greater than 0.</small>
         </div>
@@ -107,9 +112,9 @@ export default function InputForm({ onSubmit, loading, apiError }) {
                   onClick={() => !loading && toggleMaterial(mat.id)}
                 >
                   {isChecked ? (
-                    <CheckSquare size={18} style={{ color: mat.color }} />
+                    <CheckSquare size={16} style={{ color: 'var(--accent-orange)' }} />
                   ) : (
-                    <Square size={18} className="checkbox-empty" />
+                    <Square size={16} style={{ color: 'var(--line-gray)' }} />
                   )}
                   <span className="chip-label">{mat.label}</span>
                 </div>
@@ -120,19 +125,19 @@ export default function InputForm({ onSubmit, loading, apiError }) {
 
         {/* Client side error banner */}
         {clientError && (
-          <div className="alert alert-warning" role="alert">
+          <div className="error-banner">
             <AlertCircle size={18} />
             <span>{clientError}</span>
           </div>
         )}
 
-        {/* API error banner (422 / 500 / network failure) */}
+        {/* API error banner */}
         {apiError && (
-          <div className="alert alert-danger" role="alert">
-            <AlertCircle size={20} className="alert-icon" />
+          <div className="error-banner">
+            <AlertCircle size={18} />
             <div>
               <strong>API Error Response:</strong>
-              <div className="error-detail-text">{apiError}</div>
+              <div>{apiError}</div>
             </div>
           </div>
         )}
@@ -140,13 +145,13 @@ export default function InputForm({ onSubmit, loading, apiError }) {
         <button type="submit" className="btn-submit" disabled={loading}>
           {loading ? (
             <>
-              <Loader2 className="spin-icon" size={18} />
+              <Loader2 className="spinner" size={18} />
               <span>Evaluating 12-Month Trajectories...</span>
             </>
           ) : (
             <>
-              <Calculator size={18} />
-              <span>Predict Optimal Build Window</span>
+              <span>PREDICT OPTIMAL BUILD WINDOW</span>
+              <ArrowRight size={16} className="btn-arrow" />
             </>
           )}
         </button>

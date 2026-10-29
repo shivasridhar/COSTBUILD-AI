@@ -1,5 +1,5 @@
 import React from 'react';
-import { Table, Layers } from 'lucide-react';
+import { Table } from 'lucide-react';
 
 export default function BomTable({ bomData, recommendedMonth }) {
   if (!bomData || bomData.length === 0) return null;
@@ -14,7 +14,12 @@ export default function BomTable({ bomData, recommendedMonth }) {
   };
 
   return (
-    <div className="card table-card">
+    <div className="card table-card blueprint-panel">
+      <span className="corner-mark top-left">+</span>
+      <span className="corner-mark top-right">+</span>
+      <span className="corner-mark bottom-left">+</span>
+      <span className="corner-mark bottom-right">+</span>
+
       <div className="card-header">
         <Table className="header-icon" size={22} />
         <div>
@@ -27,14 +32,15 @@ export default function BomTable({ bomData, recommendedMonth }) {
         <table className="bom-table">
           <thead>
             <tr>
-              <th>Month</th>
-              <th>Year-Month</th>
-              <th>Cement (₹)</th>
-              <th>Steel (₹)</th>
-              <th>Sand (₹)</th>
-              <th>Bricks (₹)</th>
-              <th>Gravel (₹)</th>
-              <th>Total BOM Cost (₹)</th>
+              <th>HORIZON</th>
+              <th>YEAR-MONTH</th>
+              <th>CEMENT (₹)</th>
+              <th>STEEL (₹)</th>
+              <th>WIRING (₹)</th>
+              <th>SAND (₹)</th>
+              <th>BRICKS (₹)</th>
+              <th>GRAVEL (₹)</th>
+              <th>TOTAL BOM COST (₹)</th>
             </tr>
           </thead>
           <tbody>
@@ -42,19 +48,20 @@ export default function BomTable({ bomData, recommendedMonth }) {
               const isRecommended = row.year_month === recommendedMonth;
               return (
                 <tr key={row.month_idx} className={isRecommended ? 'row-recommended' : ''}>
-                  <td className="font-medium">Month {row.month_idx}</td>
+                  <td className="font-medium mono-readout">Month {row.month_idx}</td>
                   <td>
-                    <span className="ym-badge">
+                    <span className="ym-badge mono-readout">
                       {row.year_month}
-                      {isRecommended && <span className="rec-tag">Optimal</span>}
+                      {isRecommended && <span className="rec-tag">OPTIMAL</span>}
                     </span>
                   </td>
-                  <td>{row.cement_cost_rs ? formatINR(row.cement_cost_rs) : '-'}</td>
-                  <td>{row.steel_cost_rs ? formatINR(row.steel_cost_rs) : '-'}</td>
-                  <td>{row.sand_cost_rs ? formatINR(row.sand_cost_rs) : '-'}</td>
-                  <td>{row.bricks_cost_rs ? formatINR(row.bricks_cost_rs) : '-'}</td>
-                  <td>{row.gravel_cost_rs ? formatINR(row.gravel_cost_rs) : '-'}</td>
-                  <td className="total-cell font-semibold">{formatINR(row.total_bom_cost_rs)}</td>
+                  <td className="mono-readout">{row.cement_cost_rs ? formatINR(row.cement_cost_rs) : '-'}</td>
+                  <td className="mono-readout">{row.steel_cost_rs ? formatINR(row.steel_cost_rs) : '-'}</td>
+                  <td className="mono-readout">{row.wiring_cost_rs ? formatINR(row.wiring_cost_rs) : '-'}</td>
+                  <td className="mono-readout">{row.sand_cost_rs ? formatINR(row.sand_cost_rs) : '-'}</td>
+                  <td className="mono-readout">{row.bricks_cost_rs ? formatINR(row.bricks_cost_rs) : '-'}</td>
+                  <td className="mono-readout">{row.gravel_cost_rs ? formatINR(row.gravel_cost_rs) : '-'}</td>
+                  <td className="total-cell mono-readout">{formatINR(row.total_bom_cost_rs)}</td>
                 </tr>
               );
             })}

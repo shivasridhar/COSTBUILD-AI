@@ -40,7 +40,18 @@ def run_all():
     print("\n--- [Step 6] Merging Datasets & Exporting Final CSV ---")
     df_final = run_merge_pipeline(summaries)
 
+    # Initialize projects and vendor_quotes tables in buildcost.db
+    from migrate_add_projects import run_migration
+    run_migration()
+    from src.optimization.bom_optimizer import init_vendor_quotes_table
+    init_vendor_quotes_table()
+
+    print("\n--- [Step 7] Running Walk-Forward Forecast Backtest & Error Matrix ---")
+    from src.analysis.backtest import run_walk_forward_backtest
+    run_walk_forward_backtest()
+
     print("\n[SUCCESS] BuildCost AI ETL Pipeline execution finished cleanly!")
+
 
 if __name__ == "__main__":
     run_all()

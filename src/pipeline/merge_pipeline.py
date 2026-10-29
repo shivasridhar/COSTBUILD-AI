@@ -68,7 +68,7 @@ def run_merge_pipeline(extraction_summaries=None):
 
 
     sources = [
-        ("WPI (Steel & Cement)", df_wpi, 'year_month'),
+        ("WPI (Steel, Cement & Wiring)", df_wpi, 'year_month'),
         ("Diesel Prices (Delhi)", df_diesel, 'year_month'),
         ("CPI (MOSPI Combined)", df_cpi, 'year_month'),
         ("Rainfall (Climatology)", df_rainfall_clim, None),

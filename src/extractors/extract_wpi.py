@@ -1,5 +1,11 @@
 import os
+import sys
 import sqlite3
+
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
+
 import pandas as pd
 import config
 
@@ -26,7 +32,9 @@ def extract_wpi_new(file_path=None):
         'wpi_cement': 'Ordinary Portland Cement (OPC)',
         'wpi_cement_subgroup': 'e.Manufacture of cement, lime and plaster',
         'wpi_steel': 'Bars and Rods of Mild steel',
-        'wpi_steel_subgroup': 'a.Manufacture of basic iron and steel'
+        'wpi_steel_subgroup': 'a.Manufacture of basic iron and steel',
+        'wpi_wiring': 'Electric Wires & Cables',
+        'wpi_wiring_subgroup': 'd.Manufacture of other electronic and electric wires and cables'
     }
 
     results_by_month = {}

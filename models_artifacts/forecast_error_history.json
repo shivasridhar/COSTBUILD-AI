@@ -1,0 +1,146 @@
+{
+  "1_cement": {
+    "mape_pct": 1.44,
+    "sample_count": 165
+  },
+  "1_steel": {
+    "mape_pct": 1.6,
+    "sample_count": 165
+  },
+  "1_wiring": {
+    "mape_pct": 1.33,
+    "sample_count": 38
+  },
+  "2_cement": {
+    "mape_pct": 2.55,
+    "sample_count": 164
+  },
+  "2_steel": {
+    "mape_pct": 2.83,
+    "sample_count": 164
+  },
+  "2_wiring": {
+    "mape_pct": 2.29,
+    "sample_count": 37
+  },
+  "3_cement": {
+    "mape_pct": 3.44,
+    "sample_count": 163
+  },
+  "3_steel": {
+    "mape_pct": 3.88,
+    "sample_count": 163
+  },
+  "3_wiring": {
+    "mape_pct": 3.24,
+    "sample_count": 36
+  },
+  "4_cement": {
+    "mape_pct": 4.24,
+    "sample_count": 162
+  },
+  "4_steel": {
+    "mape_pct": 4.83,
+    "sample_count": 162
+  },
+  "4_wiring": {
+    "mape_pct": 4.27,
+    "sample_count": 35
+  },
+  "5_cement": {
+    "mape_pct": 4.96,
+    "sample_count": 161
+  },
+  "5_steel": {
+    "mape_pct": 5.81,
+    "sample_count": 161
+  },
+  "5_wiring": {
+    "mape_pct": 5.26,
+    "sample_count": 34
+  },
+  "6_cement": {
+    "mape_pct": 5.62,
+    "sample_count": 160
+  },
+  "6_steel": {
+    "mape_pct": 6.74,
+    "sample_count": 160
+  },
+  "6_wiring": {
+    "mape_pct": 6.13,
+    "sample_count": 33
+  },
+  "7_cement": {
+    "mape_pct": 6.0,
+    "sample_count": 159
+  },
+  "7_steel": {
+    "mape_pct": 7.52,
+    "sample_count": 159
+  },
+  "7_wiring": {
+    "mape_pct": 7.11,
+    "sample_count": 32
+  },
+  "8_cement": {
+    "mape_pct": 6.37,
+    "sample_count": 158
+  },
+  "8_steel": {
+    "mape_pct": 8.28,
+    "sample_count": 158
+  },
+  "8_wiring": {
+    "mape_pct": 8.15,
+    "sample_count": 31
+  },
+  "9_cement": {
+    "mape_pct": 6.79,
+    "sample_count": 157
+  },
+  "9_steel": {
+    "mape_pct": 8.95,
+    "sample_count": 157
+  },
+  "9_wiring": {
+    "mape_pct": 9.32,
+    "sample_count": 30
+  },
+  "10_cement": {
+    "mape_pct": 7.26,
+    "sample_count": 156
+  },
+  "10_steel": {
+    "mape_pct": 9.43,
+    "sample_count": 156
+  },
+  "10_wiring": {
+    "mape_pct": 10.27,
+    "sample_count": 29
+  },
+  "11_cement": {
+    "mape_pct": 7.73,
+    "sample_count": 155
+  },
+  "11_steel": {
+    "mape_pct": 10.08,
+    "sample_count": 155
+  },
+  "11_wiring": {
+    "mape_pct": 11.16,
+    "sample_count": 28
+  },
+  "12_cement": {
+    "mape_pct": 8.37,
+    "sample_count": 154
+  },
+  "12_steel": {
+    "mape_pct": 10.99,
+    "sample_count": 154
+  },
+  "12_wiring": {
+    "mape_pct": 12.13,
+    "sample_count": 27
+  }
+}

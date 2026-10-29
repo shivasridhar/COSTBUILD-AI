@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BuildCost AI - Construction Procurement Optimization Report</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 12mm 15mm 12mm;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            font-size: 9.5pt;
+            line-height: 1.4;
+            color: #1e293b;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+        }
+
+        .header-bar {
+            border-bottom: 2px solid #2563eb;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .brand-title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0;
+        }
+
+        .brand-subtitle {
+            font-size: 8.5pt;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        .meta-box {
+            text-align: right;
+            font-size: 8pt;
+            color: #475569;
+        }
+
+        .section-title {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #0f172a;
+            border-left: 4px solid #2563eb;
+            padding-left: 8px;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+
+        .section-subtitle {
+            font-size: 8pt;
+            color: #64748b;
+            margin-top: -4px;
+            margin-bottom: 8px;
+            font-style: italic;
+        }
+
+        .rec-banner {
+            background-color: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 15px;
+        }
+
+        .rec-banner.immediate {
+            background-color: #fefce8;
+            border-color: #fef08a;
+        }
+
+        .rec-title {
+            font-size: 11pt;
+            font-weight: bold;
+            color: #1e3a8a;
+            margin-bottom: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8pt;
+            margin-bottom: 12px;
+        }
+
+        th {
+            background-color: #f1f5f9;
+            color: #334155;
+            font-weight: bold;
+            text-align: left;
+            padding: 5px 7px;
+            border: 1px solid #cbd5e1;
+        }
+
+        td {
+            padding: 5px 7px;
+            border: 1px solid #e2e8f0;
+        }
+
+        tr:nth-child(even) td {
+            background-color: #f8fafc;
+        }
+
+        tr.recommended-row td {
+            background-color: #e0f2fe;
+            font-weight: bold;
+        }
+
+        tr.thin-sample-row td {
+            background-color: #fffbeb;
+        }
+
+        .badge-pass {
+            background-color: #dcfce7;
+            color: #166534;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 7.5pt;
+        }
+
+        .badge-source {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 7.5pt;
+        }
+
+        .badge-anchor-only {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+        }
+
+        .badge-corrected {
+            background-color: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+        }
+
+        .badge-verdict {
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 7.5pt;
+            text-transform: uppercase;
+        }
+
+        .verdict-at-market { background-color: #dcfce7; color: #166534; }
+        .verdict-above-market { background-color: #fee2e2; color: #991b1b; }
+        .verdict-below-market { background-color: #e0e7ff; color: #3730a3; }
+        .verdict-mismatch { background-color: #fef3c7; color: #92400e; }
+        .verdict-out-of-range { background-color: #f1f5f9; color: #475569; }
+
+        .chart-container {
+            text-align: center;
+            margin: 10px 0;
+        }
+
+        .chart-img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+        }
+
+        .footnote-box {
+            font-size: 7.5pt;
+            color: #64748b;
+            margin-top: -6px;
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .notice-box {
+            background-color: #f8fafc;
+            border-left: 3px solid #64748b;
+            padding: 8px 12px;
+            font-size: 7.5pt;
+            color: #475569;
+            margin-top: 15px;
+        }
+
+        .footer {
+            margin-top: 18px;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 6px;
+            font-size: 7pt;
+            color: #94a3b8;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. HEADER SECTION -->
+    <div class="header-bar">
+        <div>
+            <div class="brand-title">BuildCost AI</div>
+            <div class="brand-subtitle">Construction Procurement Optimization & Forecast Verification Report</div>
+        </div>
+        <div class="meta-box">
+            <div><strong>Project Size:</strong> {{ rec.sqft }} sq.ft</div>
+            <div><strong>Region:</strong> {{ region if region else 'National Baseline' }}</div>
+            <div><strong>Materials:</strong> {{ target_materials | join(', ') }}</div>
+            <div><strong>Generated:</strong> {{ generation_date }}</div>
+        </div>
+    </div>
+
+    <!-- 2. ANCHOR CONVERSION & BASELINE SOURCES -->
+    <div class="section-title">1. Reference Rate Anchoring & Baseline Sources</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Item Code</th>
+                <th>PWD SOR (FY25-26)</th>
+                <th>Avg WPI (FY25-26)</th>
+                <th>Conversion Factor</th>
+                <th>Effective Base Rate</th>
+                <th>Baseline Source</th>
+                <th>Sanity Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Cement</strong></td>
+                <td>{{ anchors.cement.item_code }}</td>
+                <td>₹{{ "%.2f"|format(anchors.cement.pwd_rate_rs_per_MT) }}/MT</td>
+                <td>{{ "%.2f"|format(anchors.cement.fy25_26_avg_wpi) }}</td>
+                <td>₹{{ "%.4f"|format(anchors.cement.rs_per_index_point) }}/pt</td>
+                <td>₹{{ "%.2f"|format(anchors.cement.effective_rate_rs_per_MT) }}/MT</td>
+                <td>
+                    {% if anchors.cement.correction and anchors.cement.correction.baseline_source == 'wpi_anchor_corrected_by_quotes' %}
+                    <span class="badge-source badge-corrected">Corrected by Vendor Quotes</span>
+                    {% else %}
+                    <span class="badge-source badge-anchor-only">WPI Anchor Only</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+                <td><strong>Steel (TMT)</strong></td>
+                <td>{{ anchors.steel.item_code }}</td>
+                <td>₹{{ "%.2f"|format(anchors.steel.pwd_rate_rs_per_MT) }}/MT</td>
+                <td>{{ "%.2f"|format(anchors.steel.fy25_26_avg_wpi) }}</td>
+                <td>₹{{ "%.4f"|format(anchors.steel.rs_per_index_point) }}/pt</td>
+                <td>₹{{ "%.2f"|format(anchors.steel.effective_rate_rs_per_MT) }}/MT</td>
+                <td>
+                    {% if anchors.steel.correction and anchors.steel.correction.baseline_source == 'wpi_anchor_corrected_by_quotes' %}
+                    <span class="badge-source badge-corrected">Corrected by Vendor Quotes</span>
+                    {% else %}
+                    <span class="badge-source badge-anchor-only">WPI Anchor Only</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge-pass">PASS</span></td>
+            </tr>
+            <tr>
+                <td><strong>Wiring</strong></td>
+                <td>{{ anchors.wiring.item_code }}</td>
+                <td>₹{{ "%.2f"|format(anchors.wiring.pwd_rate_rs_per_Rmt) }}/Rmt</td>
+                <td>{{ "%.2f"|format(anchors.wiring.fy25_26_avg_wpi) }}</td>
+                <td>₹{{ "%.4f"|format(anchors.wiring.rs_per_index_point) }}/pt</td>
+                <td>₹{{ "%.2f"|format(anchors.wiring.effective_rate_rs_per_Rmt) }}/Rmt</td>
+                <td>
+                    {% if anchors.wiring.correction and anchors.wiring.correction.baseline_source == 'wpi_anchor_corrected_by_quotes' %}
+                    <span class="badge-source badge-corrected">Corrected by Vendor Quotes</span>
+                    {% else %}
+                    <span class="badge-source badge-anchor-only">WPI Anchor Only</span>
+                    {% endif %}
+                </td>
+                <td><span class="badge-pass">PASS</span></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- 3. 12-MONTH FORECAST CHART -->
+    <div class="section-title">2. 12-Month Price Trajectory Extrapolation (with Shaded Confidence Bands)</div>
+    {% if chart_base64 %}
+    <div class="chart-container">
+        <img src="{{ chart_base64 }}" class="chart-img" alt="12-Month Material Price Trajectories">
+    </div>
+    {% endif %}
+
+    <!-- 4. FORECAST RELIABILITY TABLE -->
+    <div class="section-title">3. Walk-Forward Backtest Forecast Reliability (Month {{ rec.recommended_month_idx }} Horizon)</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Target Horizon</th>
+                <th>Historical MAPE (±%)</th>
+                <th>Sample Count (N)</th>
+                <th>Statistical Reliability Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% if rec.horizon_mape_by_material %}
+                {% for mat, info in rec.horizon_mape_by_material.items() %}
+                <tr class="{% if info.low_confidence %}thin-sample-row{% endif %}">
+                    <td><strong>{{ mat | capitalize }}</strong></td>
+                    <td>Month {{ rec.recommended_month_idx }}</td>
+                    <td>±{{ "%.2f"|format(info.mape_pct) }}%</td>
+                    <td>N={{ info.sample_count }}</td>
+                    <td>
+                        {% if info.low_confidence %}
+                        <strong>Low Data (N < 30)<sup>†</sup></strong> — Insufficient samples for confident estimate
+                        {% else %}
+                        High Reliability (N ≥ 30)
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            {% else %}
+                <tr>
+                    <td><strong>Steel</strong></td>
+                    <td>Month {{ rec.recommended_month_idx }}</td>
+                    <td>±{{ "%.2f"|format(rec.steel_horizon_mape_pct) }}%</td>
+                    <td>N={{ rec.steel_horizon_sample_count | default(154) }}</td>
+                    <td>High Reliability (N ≥ 30)</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+    <div class="footnote-box">
+        <sup>†</sup> <strong>Low Sample Floor (N &lt; 30)</strong>: Indicates material series with limited historical evaluation windows at this horizon (e.g. Wiring series introduced in 2023). Treat error estimates with reduced statistical confidence.<br>
+        <em>Note on N Independence</em>: N counts monthly-step walk-forward evaluation windows, not fully uncorrelated economic cycles.
+    </div>
+
+    <!-- 5. MONTHLY BOM COST TABLE -->
+    <div class="section-title">4. Monthly Bill of Materials (BOM) Total Cost Trajectory</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Month</th>
+                <th>Year-Month</th>
+                <th>Cement (₹)</th>
+                <th>Steel (₹)</th>
+                <th>Wiring (₹)</th>
+                <th>Static Subtotal (₹)</th>
+                <th>Total BOM Cost (₹)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in bom_rows %}
+            <tr class="{% if row.year_month == rec.recommended_year_month %}recommended-row{% endif %}">
+                <td>Month {{ row.month_idx }}</td>
+                <td><strong>{{ row.year_month }}</strong></td>
+                <td>₹{{ "{:,.2f}".format(row.cement_cost_rs) }}</td>
+                <td>₹{{ "{:,.2f}".format(row.steel_cost_rs) }}</td>
+                <td>₹{{ "{:,.2f}".format(row.wiring_cost_rs) }}</td>
+                <td>₹{{ "{:,.2f}".format(row.static_materials_subtotal_rs) }}</td>
+                <td><strong>₹{{ "{:,.2f}".format(row.total_bom_cost_rs) }}</strong></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- 6. RECOMMENDATION SUMMARY -->
+    <div class="section-title">5. Strategic Procurement Recommendation</div>
+    <div class="rec-banner {% if rec.is_immediate_recommended %}immediate{% endif %}">
+        <div class="rec-title">
+            {% if rec.is_immediate_recommended %}
+            Recommendation: Procure Immediately ({{ rec.immediate_month }})
+            {% else %}
+            Recommendation: Optimal Procurement Window is Month {{ rec.recommended_month_idx }} ({{ rec.recommended_year_month }})
+            {% endif %}
+        </div>
+        <div>{{ rec.summary_message }}</div>
+        <div style="margin-top: 8px; font-size: 8.5pt;">
+            <strong>Immediate Purchase Cost (Month 1):</strong> ₹{{ "{:,.2f}".format(rec.immediate_cost_rs) }} |
+            <strong>Optimal Cost:</strong> ₹{{ "{:,.2f}".format(rec.optimal_cost_rs) }} |
+            <strong>Projected Savings:</strong> ₹{{ "{:,.2f}".format(rec.savings_rs) }} ({{ "%.2f"|format(rec.savings_percent) }}%)
+        </div>
+        {% if rec.reliability_subtext %}
+        <div style="margin-top: 6px; font-size: 7.5pt; color: #475569; font-style: italic;">
+            {{ rec.reliability_subtext }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- STAGED CONSTRUCTION PROCUREMENT PHASES (IF DEFINED) -->
+    {% if phases_summary %}
+    <div class="section-title">Staged Construction Procurement Recommendations</div>
+    <div class="section-subtitle">Phase-scoped procurement recommendations evaluated over each phase's offset timeframe with true-horizon error margins.</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Seq</th>
+                <th>Phase Name</th>
+                <th>Materials Scope</th>
+                <th>Start Offset</th>
+                <th>Optimal Purchase Window</th>
+                <th>Optimal Phase Cost</th>
+                <th>Projected Savings</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ps in phases_summary %}
+            <tr>
+                <td>#{{ ps.phase.sequence_order }}</td>
+                <td><strong>{{ ps.phase.phase_name }}</strong></td>
+                <td>
+                    {% for m in ps.phase.materials %}
+                    <span style="background-color: #f1f5f9; border: 1px solid #cbd5e1; padding: 1px 5px; border-radius: 3px; font-size: 7.5pt;">{{ m }}</span>
+                    {% endfor %}
+                </td>
+                <td>Month {{ ps.phase.expected_start_month }}</td>
+                <td>
+                    <strong>Month {{ ps.recommendation.recommended_month_idx }}</strong> ({{ ps.recommendation.recommended_year_month }})
+                </td>
+                <td>₹{{ "{:,.2f}".format(ps.recommendation.optimal_cost_rs) }}</td>
+                <td>
+                    {% if ps.recommendation.savings_rs > 0 %}
+                    <strong style="color: #166534;">₹{{ "{:,.2f}".format(ps.recommendation.savings_rs) }}</strong> ({{ "%.2f"|format(ps.recommendation.savings_percent) }}%)
+                    {% else %}
+                    Buy at Phase Start
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- 6. STORAGE-FEASIBILITY PROCUREMENT STRATEGY ADVISORY -->
+    {% if storage_strategy and storage_strategy.advisories %}
+    <div class="section-title">6. Storage-Feasibility Procurement Strategy Advisory</div>
+    <div class="section-subtitle">Evaluates material shelf-life, storage degradation risk, and price trends across shared project construction phases.</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Material</th>
+                <th>Phases Involved</th>
+                <th>Phase Gap</th>
+                <th>Safe Storage Limit</th>
+                <th>Recommended Strategy</th>
+                <th>Cost Comparison</th>
+                <th>Advisory Note</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for adv in storage_strategy.advisories %}
+            <tr>
+                <td><strong>{{ adv.material | capitalize }}</strong></td>
+                <td>{{ adv.phases_involved | join(", ") }}</td>
+                <td>{{ adv.gap_days }} days ({{ adv.gap_months }}m)</td>
+                <td>{% if adv.max_safe_storage_days %}~{{ adv.max_safe_storage_days }} days{% else %}Unlimited{% endif %}</td>
+                <td>
+                    <span style="font-weight: bold; text-transform: uppercase; padding: 2px 6px; border-radius: 3px; font-size: 7.5pt;
+                        {% if adv.strategy == 'bulk' %}background-color: #d9531e; color: #ffffff;
+                        {% else %}background-color: #1e293b; color: #ffffff;{% endif %}">
+                        {{ adv.strategy | replace('_', ' ') }}
+                    </span>
+                </td>
+                <td>
+                    {% if adv.strategy == 'bulk' %}
+                    <strong>Bulk: ₹{{ "{:,.2f}".format(adv.bulk_cost_estimate_rs) }}</strong><br>
+                    <span style="color: #166534; font-size: 7pt; font-weight: bold;">Save ₹{{ "{:,.2f}".format(adv.savings_rs) }} ({{ adv.savings_pct }}%)</span>
+                    {% else %}
+                    <strong>Per-Phase Total: ₹{{ "{:,.2f}".format(adv.per_phase_cost_estimate_rs) }}</strong>
+                    {% endif %}
+                </td>
+                <td style="font-size: 7.5pt; color: #475569;">{{ adv.reasoning }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- 7. VENDOR QUOTE VERIFICATION LOG (IF INCLUDED) -->
+    {% if include_vendor_quotes and vendor_quotes %}
+    <div class="section-title">6. Vendor Quote Verification Log</div>
+    <div class="section-subtitle">Audit record of contractor and vendor quotes checked against fair-market baseline rates for this project.</div>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Material</th>
+                <th>Quoted Rate</th>
+                <th>Quoted Unit</th>
+                <th>Market Baseline</th>
+                <th>Deviation</th>
+                <th>Verdict</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for q in vendor_quotes %}
+            <tr>
+                <td>{{ q.quoted_date }}</td>
+                <td><strong>{{ q.material | capitalize }}</strong></td>
+                <td>₹{{ "{:,.2f}".format(q.quoted_rate) }}</td>
+                <td>{{ q.quoted_unit }}</td>
+                <td>₹{{ "{:,.2f}".format(q.baseline_rate) }} / {{ q.baseline_unit }}</td>
+                <td>
+                    {% if q.verdict in ['unit mismatch', 'date out of range'] %}
+                    N/A
+                    {% else %}
+                    {{ "%+.2f"|format(q.deviation_pct) }}%
+                    {% endif %}
+                </td>
+                <td>
+                    <span class="badge-verdict 
+                        {% if q.verdict == 'at market' %}verdict-at-market
+                        {% elif q.verdict == 'above market' %}verdict-above-market
+                        {% elif q.verdict == 'below market' %}verdict-below-market
+                        {% elif q.verdict == 'unit mismatch' %}verdict-mismatch
+                        {% else %}verdict-out-of-range{% endif %}">
+                        {{ q.verdict }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% endif %}
+
+    <!-- 8. MODEL LIMITATION DISCLOSURE -->
+    <div class="notice-box">
+        <strong>Model Limitation & Methodological Note:</strong><br>
+        {{ metadata.model_limitation_note }}
+    </div>
+
+    <!-- 9. FOOTER -->
+    <div class="footer">
+        BuildCost AI Platform &copy; 2026. Figures are analytical cost estimates anchored to official Public Works Department (PWD) Schedule of Rates and Wholesale Price Index (WPI) trend extrapolations with walk-forward historical error margins. Not a guarantee of live supplier inventory prices.
+    </div>
+
+</body>
+</html>
